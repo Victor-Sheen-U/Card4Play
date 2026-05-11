@@ -1,0 +1,111 @@
+classDiagram
+    %% Gestión de Usuarios
+    class User {
+        %%<<abstract>>
+        -String id
+        -String username
+        -String password
+        +login(username, password) boolean
+    }
+    
+    class Store {
+        -List~Product~ inventory
+        -List~User~ users
+        -List~Tournament~ tournaments
+    }
+    
+    class Admin {
+        +addProduct() void
+        +makeTournament() Tournament
+        +addUser() void
+    }
+    
+    class Customer {
+        -List~Purchase~ purchases
+        -List~Tournament~ tournaments
+        +makePurchase(List~Product~ products) Purchase
+        +addTournament(Tournament tournament) boolean
+        +getPurchases() List~Purchase~
+        +openBooster(Booster booster) List~Card~
+    }
+        
+    %% Gestión de Inventario y Productos
+    class Product {
+        <<abstract>>
+        -String id
+        -String name
+        -double price
+        +getPriceCOP() double
+    }
+    
+    class Card {
+        -String rarity
+        -double priceUSD
+        +getPriceCOP() double
+    }
+    
+    class Booster {
+        -List~Card~ cards
+        -boolean isOpen
+        -gcards(List~Card~ globalInventory) void
+        +open() List~Card~
+        +getCards() List~Card~
+    }
+    
+    class SealedProduct{
+        %% Hereda atributos básicos de Producto
+    }
+    
+    class Accessory {
+        %% Hereda atributos básicos de Producto
+    }       
+
+    %% Gestión de Torneos
+    class Tournament {
+        -String id
+        -String name
+        -Date date
+        -int max
+        -List~Customer~ participants
+        +addParticipant(Customer customer) boolean
+        +isFull() boolean
+    }
+
+    %% Compras e Historial
+    class Purchase {
+        -String id
+        -Date date
+        -Customer customer
+        -List~Product~ products
+        +getTotal() double
+        +getDetails() String
+    }
+
+    %% Interfaces / Servicios Externos
+    class ServicioConversorMoneda {
+        <<interface>>
+        +obtenerTasaUsdToCop() double
+    }
+    
+    class GestorPersistencia {
+        <<interface>>
+        +guardarDatosJSON(String archivo, Object datos) void
+        +cargarDatosJSON(String archivo) Object
+    }
+    
+    Tournament "1" o-- "0..*" Customer : inscribe
+    Customer "1" *-- "0..*" Purchase : realiza
+    Purchase "1" o-- "1..*" Product : incluye
+    %% Relación específica: Un booster contiene exactamente 10 cartas
+    Booster "1" *-- "10" Card : contiene
+    User <|-- Admin
+    User <|-- Customer
+    Product <|-- Card
+    Product <|-- Booster
+    Product <|-- SealedProduct
+    Product <|-- Accessory
+    User "*" *-- "1" Store : contiene
+    Product "*" *-- "1" Store : contiene
+    Tournament "*" *-- "1" Store : contiene
+    GestorPersistencia "1" *-- "1" Store : contiene
+    ServicioConversorMoneda "1" *-- "1" Store : contiene    
